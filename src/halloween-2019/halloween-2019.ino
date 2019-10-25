@@ -14,6 +14,10 @@ boolean thereminOn = true;
 
 void thereminLoop(void) {
   static Chrono _noteChrono;
+  static Chrono _onOffChrono;
+  static boolean _onOff = false;
+  static unsigned long _onOffTime = 0;
+  
   static unsigned int melody[] = {NOTE_CS6,NOTE_FS5,NOTE_FS5,NOTE_CS6,NOTE_FS5,NOTE_FS5,NOTE_CS6,NOTE_D5,NOTE_FS5,
                NOTE_CS6,NOTE_FS5,NOTE_FS5,NOTE_CS6,NOTE_FS5,NOTE_FS5,NOTE_CS6,NOTE_D5,NOTE_FS5,
                NOTE_C6,NOTE_F5,NOTE_F5,NOTE_C6,NOTE_F5,NOTE_F5,NOTE_C6,NOTE_F5,NOTE_CS5,NOTE_F5,
@@ -35,9 +39,24 @@ void thereminLoop(void) {
   static int noteDuration = 0;
   static boolean playNote = true;
 
+  if (_onOffChrono.hasPassed(_onOffTime)) {
+    _onOffChrono.restart();
+    _onOff = !_onOff;
+    if (_onOff) {
+      _onOffTime = random(10000, 15000);
+    } else {
+      _onOffTime = random(30000, 90000);
+    }
+  }
+
+  if (!_onOff) {
+    noTone(4);
+    return;
+  }
+
   if (thereminOn && playNote && melody[note]) {
     //tone(4, melody[note]);
-    tone(4, melody[note]+vibrato[x++]*(melody[note]/100));
+    tone(4, melody[note]+vibrato[x++]*(melody[note]/300));
     if (x == 12) {
       x = 0;
     }
@@ -72,13 +91,13 @@ void scareLoop()  {
   switch(_state) {
     case 0: //Inicia o temporizador de ficar quieto
       _waitChrono.restart();
-      _wtime = random(1000, 30000);
+      _wtime = random(15000, 90000);
       _state++;
       break;
     case 1: //Testa se o tempo de ficar quite acabou
       if (_waitChrono.hasPassed(_wtime)) {
         _waitChrono.restart();
-        _wtime = random(1000, 5000);
+        _wtime = random(1000, 3000);
         _lightChrono.restart();
         _ltime = 0;
         _state++;
