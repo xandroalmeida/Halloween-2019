@@ -3,6 +3,10 @@
 #include "pitches.h"
 
 
+#define LIGHT_OUT 3
+#define MUSIC_OUT 4
+#define SCARE_OUT 4
+
 void scareLoop(void);
 void thereminLoop(void);
 
@@ -43,20 +47,20 @@ void thereminLoop(void) {
     _onOffChrono.restart();
     _onOff = !_onOff;
     if (_onOff) {
-      _onOffTime = random(10000, 15000);
+      _onOffTime = random(10000, 25000);
     } else {
-      _onOffTime = random(30000, 90000);
+      _onOffTime = random(60000, 90000);
     }
   }
 
   if (!_onOff) {
-    noTone(4);
+    noTone(MUSIC_OUT);
     return;
   }
 
   if (thereminOn && playNote && melody[note]) {
     //tone(4, melody[note]);
-    tone(4, melody[note]+vibrato[x++]*(melody[note]/300));
+    tone(MUSIC_OUT, melody[note]+vibrato[x++]*(melody[note]/300));
     if (x == 12) {
       x = 0;
     }
@@ -65,7 +69,7 @@ void thereminLoop(void) {
   if (_noteChrono.hasPassed(noteDuration)) {
     _noteChrono.restart();
     if (playNote) {
-      noTone(4);
+      noTone(MUSIC_OUT);
       playNote = false;
       noteDuration *= 0.05;
     } else {
@@ -91,7 +95,7 @@ void scareLoop()  {
   switch(_state) {
     case 0: //Inicia o temporizador de ficar quieto
       _waitChrono.restart();
-      _wtime = random(15000, 90000);
+      _wtime = random(30000, 90000);
       _state++;
       break;
     case 1: //Testa se o tempo de ficar quite acabou
@@ -102,27 +106,27 @@ void scareLoop()  {
         _ltime = 0;
         _state++;
         thereminOn=false;
-        noTone(4);
+        noTone(MUSIC_OUT);
         
       }
       break;
     case 2:
-      tone(2, random(300, 1300));
+      tone(SCARE_OUT, random(300, 1300));
       if (_ltime == 0) {
         _ltime = random(50,100);
-        digitalWrite(3, !digitalRead(3));
+        digitalWrite(LIGHT_OUT, !digitalRead(LIGHT_OUT));
       }
 
       if (_lightChrono.hasPassed(_ltime)) {
-        digitalWrite(3, !digitalRead(3));
+        digitalWrite(LIGHT_OUT, !digitalRead(LIGHT_OUT));
         _lightChrono.restart();
         _ltime = random(50,100);
       }
       
       if (_waitChrono.hasPassed(_wtime)) {
         _state = 0;
-        noTone(2);
-        digitalWrite(3, HIGH);
+        noTone(SCARE_OUT);
+        digitalWrite(LIGHT_OUT, HIGH);
         thereminOn=true;
       }
       
@@ -137,9 +141,11 @@ void scareLoop()  {
 void setup() {
   randomSeed(analogRead(0));
 
-  pinMode(2, OUTPUT);
-  pinMode(3, OUTPUT);
-  digitalWrite(3, HIGH);
+  pinMode(SCARE_OUT, OUTPUT);
+  pinMode(LIGHT_OUT, OUTPUT);
+  pinMode(MUSIC_OUT, OUTPUT);
+  
+  digitalWrite(LIGHT_OUT, HIGH);
 
   runner.init();
   runner.addTask(scareTask);
